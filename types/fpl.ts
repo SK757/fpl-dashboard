@@ -1,4 +1,6 @@
 export interface PlayerElement {
+  chance_of_playing_next_round: number | null;
+  status: string;
   id: number;
   web_name: string;
   first_name: string;
