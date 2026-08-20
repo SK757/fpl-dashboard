@@ -17,10 +17,11 @@ export default function LeagueTabs({ leaguesData }: { leaguesData: LeagueStandin
   // Find specific leagues by their exact names
   const navigators = leaguesData.find((l) => l.league?.name === "The Navigators");
   const moneyLeague = leaguesData.find((l) => l.league?.name === "Backstreet Moyes");
-  const taskers = leaguesData.find((l) => l.league?.name === "Ex-Taskers Fantasy League");
+  const taskers = leaguesData.find((l) => l.league?.name === "Just for Fun");
+  const exTaskers = leaguesData.find((l) => l.league?.name === "Ex-Taskers Fantasy League");
 
   // Group the right-side leagues and set the default active one
-  const rightLeagues = [moneyLeague, taskers].filter((l) => l !== undefined) as LeagueStandingsData[];
+  const rightLeagues = [moneyLeague, taskers, exTaskers].filter((l) => l !== undefined) as LeagueStandingsData[];
   const [activeRightId, setActiveRightId] = useState<number | undefined>(rightLeagues[0]?.league?.id);
 
   const activeRightLeague = rightLeagues.find((l) => l.league.id === activeRightId);
@@ -93,7 +94,11 @@ export default function LeagueTabs({ leaguesData }: { leaguesData: LeagueStandin
               }`}
             >
               {/* Shortens names so buttons fit side-by-side nicely */}
-              {l.league.name === 'Ex-Taskers Fantasy League' ? 'Ex-Taskers' : 'Money'}
+              {l.league.name === 'Ex-Taskers Fantasy League' 
+                ? 'Ex-Taskers' 
+                : l.league.name === 'Just for Fun' 
+                  ? 'Taskers' 
+                  : 'Money'}
             </button>
           ))}
         </div>

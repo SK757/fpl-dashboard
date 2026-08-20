@@ -16,7 +16,7 @@ async function getFPLData(managerId: string) {
 
     let leaguesData: LeagueStandingsData[] = [];
     if (managerData?.leagues?.classic?.length) {
-      const targetLeagueNames = ["The Navigators", "Backstreet Moyes", "Ex-Taskers Fantasy League"];
+      const targetLeagueNames = ["The Navigators", "Backstreet Moyes", "Just for Fun", "Ex-Taskers Fantasy League"];
       
       const targetLeagues = managerData.leagues.classic.filter((l) => 
         targetLeagueNames.includes(l.name)
