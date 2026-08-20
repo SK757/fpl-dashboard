@@ -105,10 +105,10 @@ export default async function Home() {
         </div>
 
         {/* Score Container */}
-        <div className="grid grid-cols-[1fr_2fr_1fr] gap-2 w-full my-2">
+        <div className="grid grid-cols-[1fr_2fr_1fr] gap-2 w-full my-2 items-center">
 
           {/* Average Score */}
-          <div className="bg-white/60 py-3 px-1.5 rounded-md flex flex-col items-center justify-center">
+          <div className="bg-white/60 h-[75%] py-3 px-1.5 rounded-md flex flex-col items-center justify-center">
             <span className="text-3xl font-black leading-tight">
               {averageScore}
             </span>
@@ -128,7 +128,7 @@ export default async function Home() {
           </div>
 
           {/* Highest Scorer */}
-          <div className="bg-white/60 py-3 px-1.5 rounded-md flex flex-col truncate items-center justify-center">
+          <div className="bg-white/60 h-[75%] py-3 px-1.5 rounded-md flex flex-col truncate items-center justify-center">
             <span className="text-3xl font-black">
               {topElementPoints ? 
                 `${topElementPoints}` : 0}
