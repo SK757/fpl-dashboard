@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+body {
+  background-color: #00e5ff;
+}
