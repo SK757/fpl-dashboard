@@ -50,10 +50,8 @@ export default async function Home() {
   const currentGw = bootstrapData.events?.find((e) => e.is_current) || bootstrapData.events?.[0];
   // Get next gameweek info
   const nextGw = bootstrapData.events?.find((e) => e.is_next);
-  // Get current gameweek
-  const gwStarted = bootstrapData.events?.find((e) => e.is_current)
-  // Get if current Gameweek is finished
-  const gwFinished = bootstrapData.events?.find((e) => e.finished)
+  // Check if the current gameweek is ongoing (started but not yet finished)
+  const isLive = currentGw ? !currentGw.finished : false;
   // Get gameweek average score
   const averageScore = currentGw?.average_entry_score ?? 0;
 
@@ -75,57 +73,58 @@ export default async function Home() {
 
   return (
     /* Main Container */
-    <div className="h-dvh overflow-hidden bg-[#00e5ff] text-black p-4 max-w-150 w-screen min-w-[320px] flex flex-col gap-2">
+    <div className="h-dvh overflow-hidden bg-[#00e5ff] p-2 max-w-175 w-screen min-w-[320px] flex flex-col gap-1.25 leading-[1.15]">
       
       {/* Top Header */}
-      <h1 className="shrink-0 text-4xl font-medium text-center tracking-tight py-1">
+      <h1 className="shrink-0 text-4xl font-bold text-center tracking-tight py-[.3rem] m-[-8px_0_-8px]">
         FPL
       </h1>
 
       {/* Team Name Banner */}
-      <div className="shrink-0 bg-white/50 rounded-[3px] p-4 text-center">
-        <h2 className="text-2xl font-medium text-black">
+      <div className="shrink-0 bg-white/50 rounded-[3px] p-[.3rem] text-center">
+        <h2 className="text-[calc(20px+1vw)] font-bold">
           {isValidManager ? managerData.name : 'Team Name Unreachable'}
         </h2>
       </div>
 
       {/* Hero Score Card */}
-      <div className="shrink-0 bg-white/50 rounded-[3px] px-4  text-center flex flex-col items-center justify-center">
+      <div className="shrink-0 bg-white/50 rounded-[3px] text-center flex flex-col items-center justify-center">
         
         {/* Current Gameweek Banner */}
-        <div className="bg-[#3b002c] px-4 py-1 rounded-b-[15px] self-center">
-          <div className="bg-linear-to-r from-[#00ff87] to-[#02efff] bg-clip-text text-transparent text-xs font-black">
+        <div className="rounded-b-[15px] flex flex-row margin-0 p-[.2rem_.9rem] b-[#3b002c] bg-[#37003c] leading-[1.18] text-center text-[calc(10px+0.5vw)] font-bold">
+          <span className="bg-linear-to-r from-[#00ff87] to-[#02efff] bg-clip-text text-transparent">
             {currentGw?.name || 'Gameweek'}
-            {gwStarted ? //if gameweek has started (is_current gameweek === true)
-              (!gwFinished //if gameweek is live (finished === false)
-                ? (<> <span className="bg-linear-to-r from-[#00ff87] to-[#02efff] px-[.15rem] rounded-sm text-[#37003c]">Live</span></>) //then show the Live span with a space in front
-                : null) // else show nothing
-            : null} {/* else gameweek hasn't started (is_current gameweek === false) then show nothing */}
-          </div>
+          </span>
+          {isLive && (
+            <p className="bg-linear-to-r from-[#00ff87] to-[#02efff] px-[.15rem] rounded-sm text-[#37003c] ml-0.75">
+              Live
+            </p>
+          )}
         </div>
 
         {/* Score Container */}
-        <div className="grid grid-cols-[1fr_2fr_1fr] gap-2 w-full my-2 items-center">
+        <div className="grid grid-cols-[1fr_2fr_1fr] gap-2.5 w-full my-2 items-center px-2.5">
 
           {/* Average Score */}
           <div className="bg-white/60 h-[75%] py-3 px-1.5 rounded-md flex flex-col items-center justify-center">
-            <span className="text-3xl font-black leading-tight">
+            <span className="text-3xl font-black">
               {averageScore}
             </span>
             <span className="text-[0.8rem] tracking-tight">Average<br/>Score</span>
           </div>
           
-          {/* Total Points */}
-          <div className="bg-white/60 h-37.5 py-3 px-1.5 rounded-md flex flex-col items-center justify-center">
-            <span className="text-[85px] sm:text-[100px] font-black text-black leading-none tracking-tight">
-              {isValidManager ? 
-                (managerData.summary_event_points ?? 0) 
-              : 0}
+          {/* Total Points (Clickable Link to Lineup) */}
+          <Link 
+            href="/lineup"
+            className="bg-white/60 h-37.5 py-3 px-1.5 rounded-md flex flex-col items-center justify-center hover:bg-white/80 transition cursor-pointer"
+          >
+            <span className="text-[85px] sm:text-[100px] font-black text-black leading-[.9em]">
+              {isValidManager ? (managerData.summary_event_points ?? 0) : 0}
             </span>
             <span className="text-sm font-bold">
               Lineup &rarr;
             </span>
-          </div>
+          </Link>
 
           {/* Highest Scorer */}
           <div className="bg-white/60 h-[75%] py-3 px-1.5 rounded-md flex flex-col truncate items-center justify-center">
@@ -133,7 +132,7 @@ export default async function Home() {
               {topElementPoints ? 
                 `${topElementPoints}` : 0}
             </span>
-            <span className="text-[0.8rem] font-extrabold text-black truncate max-w-full leading-tight mt-1">
+            <span className="text-[0.8rem] font-extrabold text-black truncate max-w-full mt-1">
               {topPlayerName}
             </span>
             <span className="text-[0.8rem] tracking-tight">Top Scorer</span>
@@ -141,19 +140,18 @@ export default async function Home() {
         </div>
         
         {/* Gameweek Deadline Banner */}
-        <div className="bg-[#3b002c] px-4 py-1 rounded-t-[15px] leading-tight text-xs font-black self-center">
-          <div className="bg-linear-to-r from-[#00ff87] to-[#02efff] bg-clip-text text-transparent">
+        <div className="bg-[#37003c] px-4 py-1 rounded-t-[15px] text-[calc(10px+0.5vw)] font-black self-center">
+          <span className="bg-linear-to-r from-[#00ff87] to-[#02efff] bg-clip-text text-transparent">
             {nextGw?.name || 'Gameweek'} Deadline
-          </div>
-          <div className="bg-linear-to-r from-[#00ff87] to-[#02efff] bg-clip-text text-transparent">
+            <br />
             {deadlineDate}
-          </div>
+          </span>
         </div>
 
       </div>
 
       {/* Navigation Buttons 2x2 Grid */}
-      <div className="shrink-0 bg-white/50 grid grid-cols-2 gap-2 p-1">
+      <div className="shrink-0 bg-white/50 grid grid-cols-2 gap-2 p-1 rounded-[3px]">
         <Link 
           href="/compiler" 
           className="bg-white/60 hover:bg-white text-black font-bold text-center py-3 rounded-md"
@@ -161,7 +159,7 @@ export default async function Home() {
           Compiler
         </Link>
         <Link 
-          href="/squad" 
+          href="/lineup" 
           className="bg-white/60 hover:bg-white text-black font-bold text-center py-3 rounded-md"
         >
           Lineup
