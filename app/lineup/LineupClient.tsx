@@ -20,7 +20,7 @@ const statLabels: Record<string, string> = {
   bonus: 'Bonus Points',
 };
 
-export default function LineupClient({ bootstrapData, picksData, liveData, currentGw }: any) {
+export default function LineupClient({ bootstrapData, picksData, liveData, currentGw, fixturesData }: any) {
   // State to track which player was clicked
   const [selectedPick, setSelectedPick] = useState<any | null>(null);
 
@@ -28,15 +28,42 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
     id: number; 
     element_type: number; 
     code: number; 
-    web_name: string; 
+    web_name: string;
+    team: number;
+    expected_goals: string;
+    expected_assists: string;
+    expected_goal_involvements: string;
   }>(
     (bootstrapData.elements || []).map((p: any) => [p.id, p])
+  );
+
+  // Map team IDs to short names
+  const teamMap = new Map<number, string>(
+    (bootstrapData.teams || []).map((t: any) => [t.id, t.short_name])
+  );
+
+  // Map element_type to position strings
+  const positionMap: Record<number, string> = {
+    1: 'GKP',
+    2: 'DEF',
+    3: 'MID',
+    4: 'FWD'
+  };
+
+  // 1. Map team IDs to FULL names (e.g., Arsenal, Everton)
+  const fullTeamNameMap = new Map<number, string>(
+    (bootstrapData.teams || []).map((t: any) => [t.id, t.name])
+  );
+
+  // 2. Map Fixture IDs to the actual match details
+  const fixtureMap = new Map<number, any>(
+    (fixturesData || []).map((f: any) => [f.id, f])
   );
   
   // Updated LiveMap to tell TypeScript about the 'explain' breakdown data
   const liveMap = new Map<number, {
     stats: { total_points: number };
-    explain: { stats: { identifier: string; points: number; value: number }[] }[];
+    explain: { fixture: number; stats: { identifier: string; points: number; value: number }[] }[];
   }>(
     (liveData?.elements || []).map((e: any) => [e.id, e])
   );
@@ -100,7 +127,6 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
   // Variables for the currently open modal
   const selectedPlayer = selectedPick ? playerMap.get(selectedPick.element) : null;
   const selectedLive = selectedPick ? liveMap.get(selectedPick.element) : null;
-  const modalMultiplier = selectedPick?.multiplier > 0 ? selectedPick.multiplier : 1;
   const explainList = selectedLive?.explain || [];
 
   return (
@@ -148,57 +174,102 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
           onClick={() => setSelectedPick(null)} 
         >
           <div 
-            className="self-center animate-modal bg-white absolute transform max-w-107.5 w-[90%] rounded-[3px] z-300"
+            className="self-center animate-modal bg-[#37003c] text-white absolute transform box-content max-w-107.5 w-[90%] rounded-[3px] z-300 border border-white"
             onClick={(e) => e.stopPropagation()} 
           >
             {/* Modal Header */}
-            <div className="bg-[#37003c] text-white p-3 flex justify-between items-center">
-              <h3 className="font-black text-lg">{selectedPlayer.web_name}</h3>
-              <button onClick={() => setSelectedPick(null)} className="text-white/70 hover:text-white font-bold text-xl leading-none">
-                &times;
+            <div className="bg-white text-[#37003c] p-[.65rem_.75rem]">
+              <h1 style={{ fontSize: 'revert', fontWeight: 'revert' }} className="pr-10">{selectedPlayer.web_name}</h1>
+              <button onClick={() => setSelectedPick(null)} className="bg-[#00e187] border-0 box-border cursor-pointer block h-7.5 right-3 outline-none absolute top-[.9rem] w-7.5 rounded-[3px] z-2">
+                <span className="block -mt-3.5 text-[47px]">&times;</span>
               </button>
+              <p className="text-[.8rem]">
+                {teamMap.get(selectedPlayer.team)} - {positionMap[selectedPlayer.element_type]}
+              </p>
             </div>
 
             {/* Stats Breakdown */}
             <div className="max-h-[79vh] overflow-y-auto">
               {explainList.length > 0 ? (
-                explainList.map((fixture, fixIdx) => (
-									<table key={fixIdx} className="w-full text-center">
-										{explainList.length > 1 && <h4 className="text-xs font-bold text-gray-500 mb-1 border-b pb-1">Fixture {fixIdx + 1}</h4>}
-										<thead>
-											<tr>
-												<th className="text-left font-bold py-2 px-3">Statistics</th>
-												<th className="font-bold py-2 px-3">Value</th>
-												<th className="font-bold py-2 px-3">Points</th>
-											</tr>
-										</thead>
-										<tbody>
-											{fixture.stats.map((stat, statIdx) => (
-												<tr key={statIdx} className="">
-													<td className="text-left p-[.5rem_.33rem] pl-3 pt-3 text-[1.1rem]">
-														{statLabels[stat.identifier] || stat.identifier}
-													</td>
-													<td className="w-[21%] text-[1.5rem] font-bold p-[.5rem_.33rem]">
-														{stat.value}
-													</td>
-													<td className="w-[21%] text-[1.5rem] font-bold p-[.5rem_.33rem]">
-														{stat.points}
-													</td>
-                       	</tr>
-                     ))}
-										</tbody>
-									</table>
-                ))
+                explainList.map((explainItem, fixIdx) => {
+                  const match = fixtureMap.get(explainItem.fixture);
+                  const homeTeam = match ? fullTeamNameMap.get(match.team_h) : 'Unknown';
+                  const awayTeam = match ? fullTeamNameMap.get(match.team_a) : 'Unknown';
+                  
+                  // Format Kickoff Date & Time
+                  const matchDate = match ? new Date(match.kickoff_time) : new Date();
+                  const timeString = matchDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  const dateString = matchDate.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+
+                  // Determine what to show in the center (Score OR Date/Time)
+                  const hasStarted = match && (match.started || match.team_h_score !== null);
+                  const scoreDisplay = hasStarted ? (
+                    `${match.team_h_score} - ${match.team_a_score}`
+                  ) : (
+                    <>
+                      {dateString}<br />{timeString}
+                    </>
+                  );
+                  // const scoreDisplay = hasStarted ? (
+                  //   <>
+                  //     {dateString}<br />{timeString}
+                  //   </>
+                  // ) : (
+                  //   `${match.team_h_score} - ${match.team_a_score}`
+                  // );
+
+                  return (
+                    <div key={fixIdx}>
+                      {/* Fixture */}
+                      <div className="flex justify-between items-center font-normal h-[3.2rem]">
+                        <span className="flex-1 text-right text-[.85rem]">{homeTeam}</span>
+                        <span className={`text-center leading-tight mx-3 font-bold whitespace-nowrap ${hasStarted ? 'text-[#ebff00] text-[1.6rem]' : 'text-[#d0bcd3] text-[.8215rem] font-normal'}`}>
+                        {/* <span className={`text-center leading-tight mx-3 font-bold whitespace-nowrap ${hasStarted ? 'text-[#d0bcd3] text-[.8215rem] font-normal' : 'text-[#ebff00] text-[1.6rem]'}`}> */}
+                          {scoreDisplay}
+                        </span>
+                        <span className="flex-1 text-left text-[.85rem]">{awayTeam}</span>
+                      </div>
+
+                      {/* Details Table */}
+                      <table className="w-full text-center">
+                        <thead className="bg-[#5f3363] text-white">
+                          <tr>
+                            <th className="text-left font-bold py-2 px-3">Statistics</th>
+                            <th className="font-bold py-2 px-3 w-[21%]">Value</th>
+                            <th className="font-bold py-2 px-3 w-[21%]">Points</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {explainItem.stats.map((stat, statIdx) => (
+                            <tr key={statIdx} className="border-t border-[#5f3363] text-left bg-[#37003c]">
+                              <td className="p-[.5rem_.33rem] pl-3 pt-[.7rem] text-[1.1rem]">
+                                {statLabels[stat.identifier] || stat.identifier}
+                              </td>
+                              <td className="text-center text-[1.5rem] font-bold p-[.5rem_.33rem]">
+                                {stat.value}
+                              </td>
+                              <td className="text-center text-[1.5rem] font-bold p-[.5rem_.33rem] text-[#ebff00]">
+                                {stat.points}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })
               ) : (
                 <div className="text-sm text-gray-500 italic text-center py-4">No points recorded yet.</div>
               )}
 
-              {/* Total Footer */} 
-              <div className="mt-2 pt-3 border-t-2 border-[#00e5ff] flex justify-between items-center font-black">
-                <span>Total {modalMultiplier > 1 ? `(x${modalMultiplier})` : ''}</span>
-                <span className="text-lg text-[#37003c]">
-                  {(selectedLive?.stats.total_points || 0) * modalMultiplier} pts
-                </span>
+              {/* Expected Stats Footer */} 
+              <div className="text-center text-[.8rem] grid grid-cols-3 relative p-[.2rem_0] border-t border-[#7d7d7d]">
+                <span className="text-[#a7a6a6]">xG</span>
+                <span className="text-[#a7a6a6]">xA</span>
+                <span className="text-[#a7a6a6]">xGI</span>
+                <span>{selectedPlayer.expected_goals || '0.00'}</span>
+                <span>{selectedPlayer.expected_assists || '0.00'}</span>
+                <span>{selectedPlayer.expected_goal_involvements || '0.00'}</span>
               </div>
             </div>
           </div>

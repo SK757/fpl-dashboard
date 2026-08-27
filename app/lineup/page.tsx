@@ -10,6 +10,9 @@ async function getSquadData(managerId: string) {
     const bootstrapData: BootstrapData = await bootstrapRes.json();
 
     const currentGw = bootstrapData.events?.find((e) => e.is_current) || bootstrapData.events?.[0];
+    const fixturesRes = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${currentGw.id}`);
+    const fixturesData = await fixturesRes.json();
+    
     const gwId = currentGw?.id;
 
     let picksData: PicksData | null = null;
@@ -25,10 +28,10 @@ async function getSquadData(managerId: string) {
       if (liveRes.ok) liveData = await liveRes.json();
     }
 
-    return { bootstrapData, picksData, liveData, currentGw };
+    return { bootstrapData, picksData, liveData, currentGw, fixturesData };
   } catch (error) {
     console.error("Failed to load squad data", error);
-    return { bootstrapData: null, picksData: null, liveData: null, currentGw: null };
+    return { bootstrapData: null, picksData: null, liveData: null, currentGw: null, fixturesData: null };
   }
 }
 
