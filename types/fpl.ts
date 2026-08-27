@@ -1,5 +1,6 @@
 export interface PlayerElement {
   chance_of_playing_next_round: number | null;
+  code: number;
   status: string;
   id: number;
   web_name: string;
@@ -127,4 +128,29 @@ export interface LeagueStandingsData {
   standings: {
     results: LeagueStandingResult[];
   };
+}
+
+export interface FPLPick {
+  element: number;
+  position: number;
+  multiplier: number;
+  is_captain: boolean;
+  is_vice_captain: boolean;
+}
+
+export interface PicksData {
+  active_chip: string | null;
+  automatic_subs: any[];
+  entry_history: {
+    event_transfers: number;
+    event_transfers_cost: number;
+    points: number;
+    total_points: number;
+    rank: number;
+    rank_sort: number;
+    overall_rank: number;
+    bank: number;
+    value: number;
+  };
+  picks: FPLPick[];
 }

@@ -2,15 +2,13 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> | { id: string } }
+  { params }: { params: Promise<{ id: string }> } 
 ) {
-  // Await params to ensure compatibility across Next.js versions
-  const resolvedParams = await params;
-  const managerId = resolvedParams.id;
+  const { id } = await params;
 
   try {
     const response = await fetch(
-      `https://fantasy.premierleague.com/api/entry/${managerId}/`,
+      `https://fantasy.premierleague.com/api/entry/${id}/`,
       {
         headers: {
           'User-Agent':

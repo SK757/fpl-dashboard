@@ -2,8 +2,32 @@
 
 @theme {
   --font-display: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  
+  --animate-modal: modal 200ms ease;
+  --animate-bg-fade: bg-fade 200ms ease;
+  @keyframes modal {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes bg-fade {
+    0% {
+        opacity: 0
+    }
+
+    100% {
+        opacity: 1
+    }
+  }
 }
+
 
 body {
   background-color: #00e5ff;
+  line-height: normal;
 }

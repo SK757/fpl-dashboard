@@ -214,7 +214,7 @@ export default function CompilerTable({ players, teams, positions }: CompilerTab
                       : p.chance_of_playing_next_round === 50 ? "bg-[#ffab1b] hover:bg-[#ffab1b] text-black"
                       : p.chance_of_playing_next_round === 75 ? "bg-[#ffe65b] hover:bg-[#ffe65b] text-black"
                       : "bg-[#94F3FF]"}`}>
-                    <div className="text-[1rem] font-extrabold max-w-30 sm:max-w-50">
+                    <div className="text-[1rem] font-extrabold">
                       {p.web_name}
                     </div>
                     <div className="text-[10px] font-bold uppercase">

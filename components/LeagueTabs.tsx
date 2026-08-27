@@ -48,8 +48,8 @@ export default function LeagueTabs({ leaguesData }: { leaguesData: LeagueStandin
       // 1. flex-1 min-h-0 forces the list to take exactly the available height
       <div className="space-y-1 text-base font-medium flex-1 overflow-y-auto min-h-0 scrollbar-none [&::-webkit-scrollbar]:hidden">
         {combinedResults.length > 0 ? (
-          combinedResults.map((row) => (
-            <div key={row.id} className="flex justify-between mx-4 my-0 items-center border-b border-black/20 p-[.1rem] last:border-0">
+          combinedResults.map((row, index) => (
+            <div key={`league-row-${row.id}-${index}`} className="flex justify-between mx-4 my-0 items-center border-b border-black/20 p-[.1rem] last:border-0">
               {/* Player Name */}
               <span className="truncate pr-2">
                 {formatName(row.player_name)}

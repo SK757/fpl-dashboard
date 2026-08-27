@@ -2,17 +2,16 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ gw: string }> }
 ) {
-  const { id } = await params;
+  const { gw } = await params;
 
   try {
     const response = await fetch(
-      `https://fantasy.premierleague.com/api/leagues-classic/${id}/standings/`,
+      `https://fantasy.premierleague.com/api/event/${gw}/live/`,
       {
         headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'User-Agent': 'FPL-App/1.0',
         },
         next: { revalidate: 60 },
       }
@@ -20,7 +19,7 @@ export async function GET(
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: `FPL returned status ${response.status}` },
+        { error: `Failed to fetch live data for GW${gw}` },
         { status: response.status }
       );
     }
@@ -28,8 +27,9 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
+    console.error('Error fetching live data:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch League standings' },
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }
