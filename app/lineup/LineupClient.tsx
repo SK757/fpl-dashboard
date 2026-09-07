@@ -20,7 +20,7 @@ const statLabels: Record<string, string> = {
   bonus: 'Bonus Points',
 };
 
-export default function LineupClient({ bootstrapData, picksData, liveData, currentGw, fixturesData }: any) {
+export default function LineupClient({ bootstrapData, picksData, liveData, currentGw, fixturesData, historyData }: any) {
   // State to track which player was clicked
   const [selectedPick, setSelectedPick] = useState<any | null>(null);
 
@@ -30,6 +30,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
     code: number; 
     web_name: string;
     team: number;
+    now_cost: number;
     expected_goals: string;
     expected_assists: string;
     expected_goal_involvements: string;
@@ -77,6 +78,8 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
     mid: starters.filter((p: any) => playerMap.get(p.element)?.element_type === 3),
     fwd: starters.filter((p: any) => playerMap.get(p.element)?.element_type === 4),
   };
+
+  const getTeamShortName = (teamId: number) => teamMap.get(teamId) || '???';
 
   const PlayerCard = ({ pick, isBench = false }: { pick: any, isBench?: boolean }) => {
     const player = playerMap.get(pick.element);
@@ -128,6 +131,10 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
   const selectedPlayer = selectedPick ? playerMap.get(selectedPick.element) : null;
   const selectedLive = selectedPick ? liveMap.get(selectedPick.element) : null;
   const explainList = selectedLive?.explain || [];
+
+  const playerHistoryObj = selectedPlayer ? historyData?.[selectedPlayer.id] : null;
+  const last5Fixtures = (playerHistoryObj?.history || []).slice(-5);
+  const next5Fixtures = (playerHistoryObj?.upcoming || []).slice(0, 5);
 
   return (
     // 1. Add a React Fragment to group the page and the modal side-by-side
@@ -186,6 +193,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
               <p className="text-[.8rem]">
                 {teamMap.get(selectedPlayer.team)} - {positionMap[selectedPlayer.element_type]}
               </p>
+              <span className="right-[17%] absolute top-[1.3rem]">£{(selectedPlayer.now_cost / 10)}</span>
             </div>
 
             {/* Stats Breakdown */}
@@ -210,13 +218,15 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
                       {dateString}<br />{timeString}
                     </>
                   );
-                  // const scoreDisplay = hasStarted ? (
-                  //   <>
-                  //     {dateString}<br />{timeString}
-                  //   </>
-                  // ) : (
-                  //   `${match.team_h_score} - ${match.team_a_score}`
-                  // );
+                  
+                  // Determine what to show in the top-right (Match Minute OR nothing)
+                  const hasFinished = match && match.finished;
+                  const matchMinute = hasStarted && !hasFinished ? (
+                    ''
+                  ) : (
+                    `${match.minutes}'`
+                  );
+
 
                   return (
                     <div key={fixIdx}>
@@ -224,10 +234,10 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
                       <div className="flex justify-between items-center font-normal h-[3.2rem]">
                         <span className="flex-1 text-right text-[.85rem]">{homeTeam}</span>
                         <span className={`text-center leading-tight mx-3 font-bold whitespace-nowrap ${hasStarted ? 'text-[#ebff00] text-[1.6rem]' : 'text-[#d0bcd3] text-[.8215rem] font-normal'}`}>
-                        {/* <span className={`text-center leading-tight mx-3 font-bold whitespace-nowrap ${hasStarted ? 'text-[#d0bcd3] text-[.8215rem] font-normal' : 'text-[#ebff00] text-[1.6rem]'}`}> */}
                           {scoreDisplay}
                         </span>
                         <span className="flex-1 text-left text-[.85rem]">{awayTeam}</span>
+                        <span className="text-[#d0bcd3] absolute right-[.7rem] text-[.85rem]">{matchMinute}</span>
                       </div>
 
                       {/* Details Table */}
@@ -270,6 +280,63 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
                 <span>{selectedPlayer.expected_goals || '0.00'}</span>
                 <span>{selectedPlayer.expected_assists || '0.00'}</span>
                 <span>{selectedPlayer.expected_goal_involvements || '0.00'}</span>
+              </div>
+              
+              {/* Fixtures Block (Last 5 & Next 5) */}
+              <div className="flex w-full border-t border-[#7d7d7d] pt-1">
+                
+                {/* Last 5 Matches */}
+                <div className="w-1/2 border-r border-[#7d7d7d] p-[0_.5rem]">
+                  <h3 className="text-[#a7a6a6] text-[9px] uppercase tracking-widest font-bold mb-1 text-center">Last 5</h3>
+                  <div className="flex flex-col gap-1 mb-1">
+                    {last5Fixtures.map((m: any, i: number) => (
+                      <div key={i} className="flex justify-between items-center text-[11px] bg-white/10 px-1.5 py-1 rounded-[3px]">
+                        <span className="font-bold flex items-center gap-1">
+                          <span className="text-[#a7a6a6] font-normal text-[9px]">{m.round}</span>
+                          <span>{getTeamShortName(m.opponent_team)}</span>
+                          <span className="text-[#a7a6a6] font-normal text-[9px]">({m.was_home ? 'H' : 'A'})</span>
+                        </span>
+                        <span className={`font-black ${m.total_points >= 4 ? 'text-[#00ff87]' : 'text-white'}`}>
+                          {m.total_points}
+                        </span>
+                      </div>
+                    ))}
+                    {last5Fixtures.length === 0 && <span className="text-[#a7a6a6] text-[10px] italic text-center">No data</span>}
+                  </div>
+                </div>
+
+                {/* Next 5 Matches */}
+                <div className="w-1/2 p-[0_.5rem]">
+                  <h3 className="text-[#a7a6a6] text-[9px] uppercase tracking-widest font-bold mb-1 text-center">Next 5</h3>
+                  <div className="flex flex-col gap-1 mb-1">
+                    {next5Fixtures.map((m: any, i: number) => {
+                      const isHome = m.is_home;
+                      const oppId = isHome ? m.team_a : m.team_h;
+                      
+                      // FPL FDR Colors
+                      let fdrBg = 'bg-[#e7e7e7] text-[#37003c]'; // Default FDR 3 (Grey)
+                      if (m.difficulty === 1) fdrBg = 'bg-[#375523] text-white'; // Easy (Green)
+                      else if (m.difficulty === 2) fdrBg = 'bg-[#01fc7a] text-[#37003c]'; // Hard (Red)
+                      else if (m.difficulty === 4) fdrBg = 'bg-[#ff1b54] text-white'; // Hard (Red)
+                      else if (m.difficulty === 5) fdrBg = 'bg-[#80072d] text-white'; // Very Hard (Dark Red)
+
+                      return (
+                        <div key={i} className="flex justify-between items-center text-[11px] bg-white/10 px-1.5 py-1 rounded-[3px]">
+                          <span className="font-bold flex items-center gap-1">
+                            <span className="text-[#a7a6a6] font-normal text-[9px]">{m.event}</span>
+                            <span>{getTeamShortName(oppId)}</span>
+                            <span className="text-[#a7a6a6] font-normal text-[9px]">({isHome ? 'H' : 'A'})</span>
+                          </span>
+                          <span className={`font-bold px-1 rounded-xs text-[9px] flex items-center ${fdrBg}`}>
+                            FDR {m.difficulty}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {next5Fixtures.length === 0 && <span className="text-[#a7a6a6] text-[10px] italic text-center">No data</span>}
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>

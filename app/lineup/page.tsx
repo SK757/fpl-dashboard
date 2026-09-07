@@ -13,10 +13,12 @@ async function getSquadData(managerId: string) {
     const fixturesRes = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${currentGw.id}`);
     const fixturesData = await fixturesRes.json();
     
+    
     const gwId = currentGw?.id;
 
     let picksData: PicksData | null = null;
     let liveData: any = null;
+    let historyData: Record<number, any> = {};
 
     if (gwId) {
       const [picksRes, liveRes] = await Promise.all([
@@ -26,12 +28,36 @@ async function getSquadData(managerId: string) {
 
       if (picksRes.ok) picksData = await picksRes.json();
       if (liveRes.ok) liveData = await liveRes.json();
+
+      if (picksData && picksData.picks) {
+        const playerIds = picksData.picks.map((p: any) => p.element);
+        
+        // Fetch all 15 summaries concurrently for maximum speed
+        const summaryPromises = playerIds.map(async (id: number) => {
+          try {
+            const res = await fetch(`https://fantasy.premierleague.com/api/element-summary/${id}/`, { cache: 'no-store' });
+            if (!res.ok) return { id, history: [], upcoming: [] };
+            const data = await res.json();
+            // Just get the 'history' & 'upcoming' arrays which contain past and future fixtures
+            return { id, history: data.history || [], upcoming: data.fixtures || [] };
+          } catch (e) {
+            return { id, history: [], upcoming: [] };
+          }
+        });
+
+        const summaries = await Promise.all(summaryPromises);
+        
+        // Map it to a clean object: { 123: [...], 456: [...] } so the client can easily look it up
+        summaries.forEach((s) => {
+          historyData[s.id] = { history: s.history, upcoming: s.upcoming };
+        });
+      }
     }
 
-    return { bootstrapData, picksData, liveData, currentGw, fixturesData };
+    return { bootstrapData, picksData, liveData, currentGw, fixturesData, historyData };
   } catch (error) {
     console.error("Failed to load squad data", error);
-    return { bootstrapData: null, picksData: null, liveData: null, currentGw: null, fixturesData: null };
+    return { bootstrapData: null, picksData: null, liveData: null, currentGw: null, fixturesData: null, historyData: {} };
   }
 }
 
