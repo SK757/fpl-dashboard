@@ -1,7 +1,8 @@
 'use client'; // This tells Next.js this file handles interactivity!
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 // Helper to format FPL stat names nicely
 const statLabels: Record<string, string> = {
@@ -23,6 +24,24 @@ const statLabels: Record<string, string> = {
 export default function LineupClient({ bootstrapData, picksData, liveData, currentGw, fixturesData, historyData }: any) {
   // State to track which player was clicked
   const [selectedPick, setSelectedPick] = useState<any | null>(null);
+
+  // Inject root font size for Lineup page only and clean up on unmount
+  useEffect(() => {
+    const styleTag = document.createElement('style');
+    styleTag.id = 'lineup-root-font';
+    styleTag.innerHTML = `
+      @media (min-width: 360px) { html { font-size: 16px !important; } }
+      @media (min-width: 405px) { html { font-size: 17px !important; } }
+      @media (min-width: 500px) { html { font-size: 20px !important; } }
+    `;
+    document.head.appendChild(styleTag);
+
+    // Remove the style rules when leaving this page
+    return () => {
+      const existing = document.getElementById('lineup-root-font');
+      if (existing) existing.remove();
+    };
+  }, []);
 
   const playerMap = new Map<number, { 
     id: number; 
@@ -63,7 +82,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
   
   // Updated LiveMap to tell TypeScript about the 'explain' breakdown data
   const liveMap = new Map<number, {
-    stats: { total_points: number };
+    stats: { total_points: number, minutes:number };
     explain: { fixture: number; stats: { identifier: string; points: number; value: number }[] }[];
   }>(
     (liveData?.elements || []).map((e: any) => [e.id, e])
@@ -87,43 +106,62 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
     
     const liveStats = liveMap.get(pick.element);
     const basePoints = liveStats ? liveStats.stats.total_points : 0;
+    const minutes = liveStats ? liveStats.stats.minutes : 0;
     const displayMultiplier = pick.multiplier > 0 ? pick.multiplier : 1; 
     const totalPoints = basePoints * displayMultiplier;
+
+    // Check if all fixtures for this player in this GW are finished
+    const fixtures = liveStats?.explain || [];
+    const allFixturesFinished = fixtures.length > 0 && fixtures.every((f: any) => {
+      const match = fixtureMap.get(f.fixture);
+      // Check both finished and provisional
+      return match && (match.finished || match.finished_provisional); 
+    });
+    const didNotPlay = allFixturesFinished && minutes === 0;
 
     const photoUrl = `https://resources.premierleague.com/premierleague25/photos/players/110x140/${player.code}.png`;
     
     return (
-      <button 
-        type="button"
-        onClick={() => setSelectedPick(pick)}
-        // 1. Added 'group' and 'touch-manipulation'
-        // 2. Removed the active:scale-95 from the button itself so the hit-area NEVER shrinks
-        className={`w-full group cursor-pointer touch-manipulation flex flex-col items-center justify-end flex-1 min-w-0 max-w-16.25 px-px ${isBench ? 'grayscale' : ''}`}
-      >
-        {/* Inner wrapper: This shrinks visually, but the button surrounding it stays full size! */}
-        <div className="w-full flex flex-col items-center transition-transform group-active:scale-95">
-          <div 
-            style={{ backgroundImage: `url(${photoUrl})` }}        
-            className="relative bg-no-repeat bg-contain bg-bottom w-12 h-12 sm:w-14 sm:h-14 flex items-start justify-center">
+      <div className="grid grid-rows-[3.125rem_.9rem_auto] min-h-22 relative text-center z-1">
+        <div className="h-11.25 w-11.25 m-[0_auto_.39rem] relative">
+          <div className={`${isBench ? 'grayscale' : 'filter-none'} border border-black bg-white rounded-[100%] overflow-hidden h-11.25 w-11.25 relative`}>
+            {photoUrl ? (
+              <Image
+                src={photoUrl}
+                alt={player.web_name}
+                fill
+                sizes="(max-width: 404px) 45px, (max-width: 499px) 47.8125px, 56.25px"
+                style={{ left: '-1px' }}
+                className="object-contain object-bottom scale-[1.5] origin-bottom translate-y-5"
+              />
+            ) : (
+              <span className="text-[10px] text-black/50 font-bold">No Image</span>
+            )}
+          </div>
             {(pick.is_captain || pick.is_vice_captain) && (
-              <div className="absolute top-0 right-0 bg-black/70 text-[#00ff87] text-[9px] font-black px-1 rounded-sm">
+              <div className="absolute top-0 right-0 z-10 bg-black/70 text-[#00ff87] text-[9px] font-black px-1 rounded-sm">
                 {pick.is_captain ? "C" : "V"}
               </div>
             )}
-          </div>
-          
-          <div className="w-full bg-[#37003c] text-white text-center rounded-sm overflow-hidden flex flex-col shadow-md">
-            <div className="bg-[#37003c] px-0.5 py-0.5">
-              <p className="text-[9px] font-bold truncate leading-tight">
-                {player.web_name}
-              </p>
-            </div>
-            <div className={`${isBench ? 'bg-gray-400' : 'bg-[#00ff87]'} text-[#37003c] text-[10px] font-black w-full border-t border-black/20`}>
-              {totalPoints}
-            </div>
-          </div>
         </div>
-      </button>
+        <div className="box-border block font-semibold text-[.6875rem] overflow-hidden p-[0_5px] text-ellipsis text-nowrap w-full">
+          {player.web_name}
+        </div>
+        <div className="flex text-[1.125rem] tabular-nums font-semibold justify-center items-center">
+          {didNotPlay ? (
+            <span className="tracking-tighter">
+              DNP
+            </span>
+          ) : (
+            totalPoints
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => setSelectedPick(pick)}
+          className="bg-transparent border-0 cursor-pointer h-full left-0 m-[-3px_0_0] outline-none absolute text-indent-[-999rem] top-0 w-full"
+        ></button>
+      </div>
     );
   };
 
@@ -136,10 +174,12 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
   const last5Fixtures = (playerHistoryObj?.history || []).slice(-5);
   const next5Fixtures = (playerHistoryObj?.upcoming || []).slice(0, 5);
 
+  const gwPoints = picksData.entry_history.points;
+
   return (
     // 1. Add a React Fragment to group the page and the modal side-by-side
     <>
-      <div className="h-dvh overflow-hidden bg-[#00e5ff] p-2 max-w-175 mx-auto w-full min-w-[320px] flex flex-col gap-1.25 font-sans select-none text-black relative">
+      <div className="min-h-dvh bg-[#00e5ff] p-2 max-w-175 mx-auto w-full min-w-[320px] flex flex-col gap-1.25 select-none text-black relative">
         
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between bg-white/50 p-2 rounded-[3px]">
@@ -150,28 +190,37 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
           <div className="w-16.5"></div>
         </div>
 
-        {/* The Pitch (Starters) */}
-        <div className="flex-1 bg-linear-to-b from-[#2e8b57] to-[#1e5c3a] rounded-[3px] border-2 border-white/40 pt-1 pb-2 flex flex-col justify-around relative overflow-hidden shadow-inner">
-          <div className="absolute inset-0 pointer-events-none opacity-30 flex flex-col justify-between">
-             <div className="h-[20%] border-b-2 border-white mx-auto w-1/2 rounded-b-[40px]"></div>
-             <div className="border-t-2 border-white w-full"></div>
-             <div className="h-[20%] border-t-2 border-white mx-auto w-1/2 rounded-t-[40px]"></div>
+        {/* The Pitch */}
+        <div className="flex-1 w-full max-w-3xl mx-auto relative flex flex-col">
+          <div className="flex-1 w-full flex flex-col justify-around relative py-2 items-center">
+              <div className="gw-info left-4">
+                <span className="text-[calc(13px+.5vw)]">
+                  Still to Play<br/>                
+                </span>
+                <span className="italic text-[6vmin] font-medium">
+                  <b>0</b>
+                </span>
+              </div>
+              {groupedStarters.gk.map((pick: any) => <PlayerCard key={pick.element} pick={pick} />)}
+              <div className="gw-info right-4">
+                <span className="text-[calc(13px+.5vw)]">
+                  Points<br/>                
+                </span>
+                <span className="italic text-[6vmin] font-medium">
+                  <b>{gwPoints}</b>
+                </span>
+              </div>
+            <div className="player-grid-row">{groupedStarters.def.map((pick: any) => <PlayerCard key={pick.element} pick={pick} />)}</div>
+            <div className="player-grid-row">{groupedStarters.mid.map((pick: any) => <PlayerCard key={pick.element} pick={pick} />)}</div>
+            <div className="player-grid-row">{groupedStarters.fwd.map((pick: any) => <PlayerCard key={pick.element} pick={pick} />)}</div>
+            <div className="player-grid-row mt-2 pt-4 border-t border-black/20 w-full relative justify-center">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00e5ff] px-2 text-[10px] font-bold uppercase tracking-widest text-black/50">
+                Bench
+              </span>
+              {bench.map((pick: any) => <PlayerCard key={pick.element} pick={pick} isBench={true} />)}
+            </div>
           </div>
-
-          <div className="flex justify-around w-full px-1 z-10">{groupedStarters.gk.map((pick: any) => <PlayerCard key={pick.element} pick={pick} />)}</div>
-          <div className="flex justify-around w-full px-1 z-10">{groupedStarters.def.map((pick: any) => <PlayerCard key={pick.element} pick={pick} />)}</div>
-          <div className="flex justify-around w-full px-1 z-10">{groupedStarters.mid.map((pick: any) => <PlayerCard key={pick.element} pick={pick} />)}</div>
-          <div className="flex justify-around w-full px-1 z-10">{groupedStarters.fwd.map((pick: any) => <PlayerCard key={pick.element} pick={pick} />)}</div>
         </div>
-
-        {/* The Bench */}
-        <div className="shrink-0 bg-[#37003c] rounded-[3px] p-2">
-          <h2 className="text-[#00ff87] text-[10px] font-bold mb-1 uppercase tracking-wide text-center">Bench</h2>
-          <div className="flex justify-around w-full px-1">
-            {bench.map((pick: any) => <PlayerCard key={pick.element} pick={pick} isBench={true} />)}
-          </div>
-        </div>
-
       </div> {/* <-- END OF MAIN CONTAINER */}
 
       {/* 2. MODAL OVERLAY - Now sitting completely outside the overflow-hidden container! */}
@@ -188,7 +237,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
             <div className="bg-white text-[#37003c] p-[.65rem_.75rem]">
               <h1 style={{ fontSize: 'revert', fontWeight: 'revert' }} className="pr-10">{selectedPlayer.web_name}</h1>
               <button onClick={() => setSelectedPick(null)} className="bg-[#00e187] border-0 box-border cursor-pointer block h-7.5 right-3 outline-none absolute top-[.9rem] w-7.5 rounded-[3px] z-2">
-                <span className="block -mt-3.5 text-[47px]">&times;</span>
+                <span className="flex justify-center leading-0 text-[47px]">&times;</span>
               </button>
               <p className="text-[.8rem]">
                 {teamMap.get(selectedPlayer.team)} - {positionMap[selectedPlayer.element_type]}
@@ -222,12 +271,11 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
                   // Determine what to show in the top-right (Match Minute OR nothing)
                   const hasFinished = match && match.finished;
                   const matchMinute = hasStarted && !hasFinished ? (
-                    ''
-                  ) : (
                     `${match.minutes}'`
+                  ) : (
+                    ''
                   );
-
-
+                  
                   return (
                     <div key={fixIdx}>
                       {/* Fixture */}
@@ -252,7 +300,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
                         <tbody>
                           {explainItem.stats.map((stat, statIdx) => (
                             <tr key={statIdx} className="border-t border-[#5f3363] text-left bg-[#37003c]">
-                              <td className="p-[.5rem_.33rem] pl-3 pt-[.7rem] text-[1.1rem]">
+                              <td className="p-[.5rem_.33rem] pl-3 text-[1.1rem]">
                                 {statLabels[stat.identifier] || stat.identifier}
                               </td>
                               <td className="text-center text-[1.5rem] font-bold p-[.5rem_.33rem]">
