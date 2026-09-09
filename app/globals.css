@@ -26,8 +26,39 @@
   }
 }
 
+* {
+    transition: background 200ms,transform 200ms,border-color 200ms
+}
 
 body {
   background-color: #00e5ff;
   line-height: normal;
+}
+
+.player-grid-row {
+  column-gap: .6rem;
+  display: grid;
+  grid-auto-columns: minmax(3.875rem, 5.5rem);
+  grid-auto-flow: column;
+  justify-self: center;
+  min-height: 5.25rem;
+  min-width: 4.25rem;
+  position: relative;
+  z-index: 2;
+}
+.player-grid-row:first-child {
+  column-gap: 0;
+  grid-template-columns: 1fr minmax(3.875rem, 5.5rem) 1fr;
+  width: 100%;
+}
+.gw-info {
+  background-color: #fff;
+  border: 2px solid #000;
+  border-radius: 10px;
+  box-shadow: 2px 2px 0 rgba(0,0,0,1);
+  padding: .375rem 0.75rem;
+  align-items: center;
+  position: absolute;
+  top: 1rem;
+  text-align: center;
 }
