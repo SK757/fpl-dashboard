@@ -30,8 +30,8 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
     const styleTag = document.createElement('style');
     styleTag.id = 'lineup-root-font';
     styleTag.innerHTML = `
-      @media (min-width: 360px) { html { font-size: 16px !important; } }
-      @media (min-width: 405px) { html { font-size: 17px !important; } }
+      @media (max-width: 404px) { html { font-size: 16px !important; } }
+      @media (min-width: 405px) and (max-width: 499px), (min-height: 641px) and (max-height: 663px) { html { font-size: 17px !important; } }
       @media (min-width: 500px) { html { font-size: 20px !important; } }
     `;
     document.head.appendChild(styleTag);
@@ -99,6 +99,27 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
   };
 
   const getTeamShortName = (teamId: number) => teamMap.get(teamId) || '???';
+  
+  const calculateGamesRemaining = () => {
+    let remaining = 0;
+    const activePicks = picksData.picks.filter((pick: any) => pick.multiplier > 0);
+
+    activePicks.forEach((pick: any) => {
+      const liveStats = liveMap.get(pick.element);
+      const fixtures = liveStats?.explain || [];
+
+      fixtures.forEach((f: any) => {
+        const match = fixtureMap.get(f.fixture);
+        // If the match exists but is NOT finished, it's a game left to play
+        if (match && !match.finished && !match.finished_provisional) {
+          remaining += 1;
+        }
+      });
+    });
+
+    return remaining;
+  };
+  const gamesLeft = calculateGamesRemaining();
 
   const PlayerCard = ({ pick, isBench = false }: { pick: any, isBench?: boolean }) => {
     const [imgError, setImgError] = useState(false);
@@ -181,30 +202,23 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
   return (
     // 1. Add a React Fragment to group the page and the modal side-by-side
     <>
-      <div className="min-h-dvh bg-[#00e5ff] p-2 max-w-175 mx-auto w-full min-w-[320px] flex flex-col gap-1.25 select-none text-black relative">
+      <div className="min-h-dvh bg-[#00e5ff] p-1 max-w-175 mx-auto w-full min-w-[320px] flex flex-col gap-1.25 select-none text-black relative">
         
-        {/* Header */}
-        <div className="shrink-0 flex items-center justify-between bg-white/50 p-2 rounded-[3px]">
-          <Link href="/" className="font-bold text-black bg-white/60 px-3 py-1 rounded-[3px] text-sm hover:bg-white transition">
-            &larr; Back
-          </Link>
-          <h1 className="text-lg sm:text-xl font-black tracking-tight">GW{currentGw?.id} Lineup</h1>
-          <div className="w-16.5"></div>
-        </div>
+        
 
         {/* The Pitch */}
         <div className="flex-1 w-full max-w-3xl mx-auto relative flex flex-col">
           <div className="flex-1 w-full flex flex-col justify-around relative py-2 items-center">
-              <div className="gw-info left-4">
+              <div className="gw-info left-4 shadow-[-2px_2px_0_black]">
                 <span className="text-[calc(13px+.5vw)]">
-                  Still to Play<br/>                
+                  To Play<br/>                
                 </span>
                 <span className="italic text-[6vmin] font-medium">
-                  <b>0</b>
+                  <b>{gamesLeft}</b>
                 </span>
               </div>
               {groupedStarters.gk.map((pick: any) => <PlayerCard key={pick.element} pick={pick} />)}
-              <div className="gw-info right-4">
+              <div className="gw-info right-4 shadow-[2px_2px_0_black]">
                 <span className="text-[calc(13px+.5vw)]">
                   Points<br/>                
                 </span>
@@ -222,6 +236,14 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
               {bench.map((pick: any) => <PlayerCard key={pick.element} pick={pick} isBench={true} />)}
             </div>
           </div>
+        </div>
+        {/* Header */}
+        <div className="shrink-0 flex items-center justify-between bg-white/50 p-1 rounded-[3px]">
+          <Link href="/" className="font-bold text-black bg-white/60 px-3 py-1 rounded-[3px] text-sm hover:bg-white transition">
+            &larr; Back
+          </Link>
+          <h1 className="text-lg sm:text-xl font-black tracking-tight">GW{currentGw?.id} Lineup</h1>
+          <div className="w-16.5"></div>
         </div>
       </div> {/* <-- END OF MAIN CONTAINER */}
 
@@ -247,7 +269,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
               <span className="right-[17%] absolute top-[1.3rem]">£{(selectedPlayer.now_cost / 10)}</span>
             </div>
 
-            {/* Stats Breakdown */}
+            {/* Modal Stats */}
             <div className="max-h-[79vh] overflow-y-auto">
               {explainList.length > 0 ? (
                 explainList.map((explainItem, fixIdx) => {
