@@ -101,6 +101,8 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
   const getTeamShortName = (teamId: number) => teamMap.get(teamId) || '???';
 
   const PlayerCard = ({ pick, isBench = false }: { pick: any, isBench?: boolean }) => {
+    const [imgError, setImgError] = useState(false);
+
     const player = playerMap.get(pick.element);
     if (!player) return null;
     
@@ -120,23 +122,23 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
     const didNotPlay = allFixturesFinished && minutes === 0;
 
     const photoUrl = `https://resources.premierleague.com/premierleague25/photos/players/110x140/${player.code}.png`;
+    const fallbackUrl = "https://resources.premierleague.com/premierleague/photos/players/110x140/Photo-Missing.png";
     
     return (
       <div className="grid grid-rows-[3.125rem_.9rem_auto] min-h-22 relative text-center z-1">
         <div className="h-11.25 w-11.25 m-[0_auto_.39rem] relative">
           <div className={`${isBench ? 'grayscale' : 'filter-none'} border border-black bg-white rounded-[100%] overflow-hidden h-11.25 w-11.25 relative`}>
-            {photoUrl ? (
-              <Image
-                src={photoUrl}
-                alt={player.web_name}
-                fill
-                sizes="(max-width: 404px) 45px, (max-width: 499px) 47.8125px, 56.25px"
-                style={{ left: '-1px' }}
-                className="object-contain object-bottom scale-[1.5] origin-bottom translate-y-5"
-              />
-            ) : (
-              <span className="text-[10px] text-black/50 font-bold">No Image</span>
-            )}
+            <Image
+              src={imgError ? fallbackUrl : photoUrl}
+              onError={() => setImgError(true)}
+              alt={player.web_name}
+              fill
+              sizes="(max-width: 404px) 45px, (max-width: 499px) 47.8125px, 56.25px"
+              style={{ left: '-1px' }}
+              className={`object-contain object-bottom scale-[1.5] origin-bottom ${
+                imgError ? 'translate-y-7' : 'translate-y-5'
+              }`}
+            />
           </div>
             {(pick.is_captain || pick.is_vice_captain) && (
               <div className="absolute top-0 right-0 z-10 bg-black/70 text-[#00ff87] text-[9px] font-black px-1 rounded-sm">
