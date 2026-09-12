@@ -30,9 +30,21 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
     const styleTag = document.createElement('style');
     styleTag.id = 'lineup-root-font';
     styleTag.innerHTML = `
-      @media (max-width: 404px) { html { font-size: 16px !important; } }
-      @media (min-width: 405px) and (max-width: 499px), (min-height: 641px) and (max-height: 663px) { html { font-size: 17px !important; } }
-      @media (min-width: 500px) { html { font-size: 20px !important; } }
+      @media (max-width: 404px) and (max-height: 632px) { 
+        html { 
+          font-size: 16px !important; 
+        }
+      }
+      @media (min-width: 405px) and (max-width: 499px), (min-height: 633px) and (max-height: 663px) {
+        html { 
+          font-size: 17px !important;
+        }
+      }
+      @media (min-width: 500px) and (min-height: 664px) { 
+        html { 
+          font-size: 20px !important; 
+        }
+      }
     `;
     document.head.appendChild(styleTag);
 
@@ -110,8 +122,8 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
 
       fixtures.forEach((f: any) => {
         const match = fixtureMap.get(f.fixture);
-        // If the match exists but is NOT finished, it's a game left to play
-        if (match && !match.finished && !match.finished_provisional) {
+        // If the match exists, has NOT started and is NOT finished, it's a game left to play
+        if (match && !match.started && !match.finished_provisional) {
           remaining += 1;
         }
       });
@@ -120,6 +132,24 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
     return remaining;
   };
   const gamesLeft = calculateGamesRemaining();
+
+  const calculateLivePoints = () => {
+    let totalLivePoints = 0;
+
+    picksData.picks.forEach((pick: any) => {
+      // Get the player's live stats from the map
+      const liveStats = liveMap.get(pick.element);
+      
+      // Get their current base points, default to 0 if not found
+      const basePoints = liveStats ? liveStats.stats.total_points : 0;
+      
+      // Multiply by their multiplier (1 for normal, 2 for captain, 0 for bench)
+      totalLivePoints += basePoints * pick.multiplier;
+    });
+    
+    return totalLivePoints;
+  };
+  const livePoints = calculateLivePoints();
 
   const PlayerCard = ({ pick, isBench = false }: { pick: any, isBench?: boolean }) => {
     const [imgError, setImgError] = useState(false);
@@ -133,18 +163,36 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
     const displayMultiplier = pick.multiplier > 0 ? pick.multiplier : 1; 
     const totalPoints = basePoints * displayMultiplier;
 
-    // Check if all fixtures for this player in this GW are finished
+    // Check fixtures to see what is played vs unplayed
     const fixtures = liveStats?.explain || [];
-    const allFixturesFinished = fixtures.length > 0 && fixtures.every((f: any) => {
+    let playedCount = 0;
+    let isCurrentlyPlaying = false;
+    const unplayedFixtures: string[] = [];
+
+    fixtures.forEach((f: any) => {
       const match = fixtureMap.get(f.fixture);
-      // Check both finished and provisional
-      return match && (match.finished || match.finished_provisional); 
+      if (!match) return;
+
+      if (match.started) {
+        playedCount++;
+        if (match.finished_provisional) {
+          isCurrentlyPlaying = true;
+        }
+      } else {
+        // Figure out opponent and H/A
+        const isHome = match.team_h === player.team;
+        const opponentId = isHome ? match.team_a : match.team_h;
+        const oppName = teamMap.get(opponentId) || '???'; 
+        unplayedFixtures.push(`${oppName} (${isHome ? 'H' : 'a'})`);
+      }
     });
+    const allFixturesFinished = fixtures.length > 0 && playedCount === fixtures.length;
     const didNotPlay = allFixturesFinished && minutes === 0;
 
     const photoUrl = `https://resources.premierleague.com/premierleague25/photos/players/110x140/${player.code}.png`;
     const fallbackUrl = "https://resources.premierleague.com/premierleague/photos/players/110x140/Photo-Missing.png";
     
+    // PLAYERCARD
     return (
       <div className="grid grid-rows-[3.125rem_.9rem_auto] min-h-22 relative text-center z-1">
         <div className="h-11.25 w-11.25 m-[0_auto_.39rem] relative">
@@ -161,11 +209,16 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
               }`}
             />
           </div>
-            {(pick.is_captain || pick.is_vice_captain) && (
-              <div className="absolute top-0 right-0 z-10 bg-black/70 text-[#00ff87] text-[9px] font-black px-1 rounded-sm">
-                {pick.is_captain ? "C" : "V"}
-              </div>
-            )}
+          {isCurrentlyPlaying && (
+            <div className="absolute top-0 left-0 z-10 bg-black/70 text-[#00ff87] text-[9px] w-[5.5px] h-[10.5px] box-content px-[4.25px] font-black rounded-sm flex items-center justify-center">
+              <div className="w-1.5 h-1.5 bg-[#00ff87] rounded-full animate-pulse-two"></div>
+            </div>
+          )}
+          {(pick.is_captain || pick.is_vice_captain) && (
+            <div className="absolute top-0 right-0 z-10 bg-black/70 text-[#00ff87] text-[9px] w-[5.5px] h-[10.5px] box-content px-[4.25px] font-black rounded-sm">
+              {pick.is_captain ? "C" : "V"}
+            </div>
+          )}
         </div>
         <div className="box-border block font-semibold text-[.6875rem] overflow-hidden p-[0_5px] text-ellipsis text-nowrap w-full">
           {player.web_name}
@@ -175,8 +228,24 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
             <span className="tracking-tighter">
               DNP
             </span>
+          ) : playedCount === 0 && unplayedFixtures.length > 0 ? (
+            // CASE 1: Hasn't played any games yet -> e.g. "ARS (a)"
+            <span className="text-[11px] font-bold tracking-tight text-gray-700 whitespace-nowrap">
+              {unplayedFixtures.join(', ')}
+            </span>
+          ): playedCount > 0 && unplayedFixtures.length > 0 ? (
+            // CASE 2: DGW partially played -> e.g. "10, ARS (a)"
+            <span className="text-[13px] font-bold whitespace-nowrap">
+              {totalPoints}
+              <span className="text-gray-600 font-semibold text-[10px] ml-1">
+                , {unplayedFixtures.join(', ')}
+              </span>
+            </span>
           ) : (
-            totalPoints
+            // CASE 3: All games finished, or Blank GW -> e.g. "10"
+            <span className="text-[1.125rem] font-semibold">
+              {totalPoints}
+            </span>
           )}
         </div>
         <button
@@ -196,8 +265,6 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
   const playerHistoryObj = selectedPlayer ? historyData?.[selectedPlayer.id] : null;
   const last5Fixtures = (playerHistoryObj?.history || []).slice(-5);
   const next5Fixtures = (playerHistoryObj?.upcoming || []).slice(0, 5);
-
-  const gwPoints = picksData.entry_history.points;
 
   return (
     // 1. Add a React Fragment to group the page and the modal side-by-side
@@ -223,7 +290,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
                   Points<br/>                
                 </span>
                 <span className="italic text-[6vmin] font-medium">
-                  <b>{gwPoints}</b>
+                  <b>{livePoints}</b>
                 </span>
               </div>
             <div className="player-grid-row">{groupedStarters.def.map((pick: any) => <PlayerCard key={pick.element} pick={pick} />)}</div>
@@ -293,7 +360,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
                   );
                   
                   // Determine what to show in the top-right (Match Minute OR nothing)
-                  const hasFinished = match && match.finished;
+                  const hasFinished = match && match.finished_provisional;
                   const matchMinute = hasStarted && !hasFinished ? (
                     `${match.minutes}'`
                   ) : (

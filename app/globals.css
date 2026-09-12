@@ -5,6 +5,7 @@
   
   --animate-modal: modal 200ms ease;
   --animate-bg-fade: bg-fade 200ms ease;
+  --animate-pulse-two: pulse-two 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   @keyframes modal {
     0% {
       opacity: 0;
@@ -22,6 +23,12 @@
 
     100% {
         opacity: 1
+    }
+  }
+
+  @keyframes pulse-two {
+    50% {
+      opacity: 0.4;
     }
   }
 }

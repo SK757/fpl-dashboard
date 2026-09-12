@@ -96,7 +96,7 @@ export default async function Home() {
             {currentGw?.name || 'Gameweek'}
           </span>
           {isLive && (
-            <p className="bg-linear-to-r from-[#00ff87] to-[#02efff] px-[.15rem] rounded-sm text-[#37003c] ml-0.75">
+            <p className="bg-linear-to-r from-[#00ff87] to-[#02efff] px-[.15rem] rounded-sm text-[#37003c] ml-1">
               Live
             </p>
           )}
