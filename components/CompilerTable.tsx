@@ -14,6 +14,7 @@ type SortKey = keyof PlayerElement | "price" | null;
 const BASIC_COLUMNS = [
   "total_points",
   "now_cost",
+  "price_change_percent",
   "points_per_game",
   "event_points",
   "ep_next",
@@ -153,6 +154,7 @@ export default function CompilerTable({ players, teams, positions }: CompilerTab
               </th>
               {isVisible("total_points") && <Th label="Total Pts" sortKey="total_points" />}
               {isVisible("now_cost") && <Th label="Price" sortKey="now_cost" />}
+              {isVisible("price_change_percent") && <Th label="Price Change %" sortKey="price_change_percent" />}
               {isVisible("points_per_game") && <Th label="PPG" sortKey="points_per_game" />}
               {isVisible("event_points") && <Th label="GW Pts" sortKey="event_points" />}
               {isVisible("ep_this") && <Th label="EX This GW" sortKey="ep_this" />}
@@ -223,6 +225,7 @@ export default function CompilerTable({ players, teams, positions }: CompilerTab
                   </td>
                   {isVisible("total_points") && <td className="p-2 font-black whitespace-nowrap">{p.total_points}</td>}
                   {isVisible("now_cost") && <td className="p-2 font-bold whitespace-nowrap">£{(p.now_cost / 10).toFixed(1)}</td>}
+                  {isVisible("price_change_percent") && <td className="p-2 font-semibold whitespace-nowrap">{p.price_change_percent}%</td>}
                   {isVisible("points_per_game") && <td className="p-2 font-semibold whitespace-nowrap">{p.points_per_game}</td>}
                   {isVisible("event_points") && <td className="p-2 font-bold whitespace-nowrap">{p.event_points}</td>}
                   {isVisible("ep_this") && <td className="p-2 font-semibold whitespace-nowrap">{p.ep_this}</td>}

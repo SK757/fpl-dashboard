@@ -10,6 +10,7 @@ export interface PlayerElement {
   element_type: number;
   total_points: number;
   now_cost: number;
+  price_change_percent: string;
   points_per_game: string;
   event_points: number;
   ep_this: string;
