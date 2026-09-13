@@ -165,7 +165,8 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
 
     // Check fixtures to see what is played vs unplayed
     const fixtures = liveStats?.explain || [];
-    let playedCount = 0;
+    let startedCount = 0;
+    let finishedCount = 0;
     let isCurrentlyPlaying = false;
     const unplayedFixtures: string[] = [];
 
@@ -174,9 +175,11 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
       if (!match) return;
 
       if (match.started) {
-        playedCount++;
-        if (!match.finished_provisional) {
-          isCurrentlyPlaying = true;
+        startedCount++; // Match has started
+        if (match.finished_provisional) {
+          finishedCount++; // Match is over
+        } else {
+          isCurrentlyPlaying = true; // Match is live
         }
       } else {
         // Figure out opponent and H/A
@@ -186,7 +189,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
         unplayedFixtures.push(`${oppName} (${isHome ? 'H' : 'a'})`);
       }
     });
-    const allFixturesFinished = fixtures.length > 0 && playedCount === fixtures.length;
+    const allFixturesFinished = fixtures.length > 0 && finishedCount === fixtures.length;
     const didNotPlay = allFixturesFinished && minutes === 0;
 
     const photoUrl = `https://resources.premierleague.com/premierleague25/photos/players/110x140/${player.code}.png`;
@@ -228,12 +231,12 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
             <span className="tracking-tighter">
               DNP
             </span>
-          ) : playedCount === 0 && unplayedFixtures.length > 0 ? (
+          ) : finishedCount === 0 && unplayedFixtures.length > 0 ? (
             // CASE 1: Hasn't played any games yet -> e.g. "ARS (a)"
             <span className="text-[11px] font-bold tracking-tight text-gray-700 whitespace-nowrap">
               {unplayedFixtures.join(', ')}
             </span>
-          ): playedCount > 0 && unplayedFixtures.length > 0 ? (
+          ): finishedCount > 0 && unplayedFixtures.length > 0 ? (
             // CASE 2: DGW partially played -> e.g. "10, ARS (a)"
             <span className="text-[13px] font-bold whitespace-nowrap">
               {totalPoints}
