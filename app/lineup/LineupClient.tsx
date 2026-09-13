@@ -175,7 +175,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
 
       if (match.started) {
         playedCount++;
-        if (match.finished_provisional) {
+        if (!match.finished_provisional) {
           isCurrentlyPlaying = true;
         }
       } else {
