@@ -6,7 +6,7 @@ const MY_MANAGER_ID = '3115828';
 
 async function getSquadData(managerId: string) {
   try {
-    const bootstrapRes = await fetch('http://localhost:3000/api/fpl/bootstrap', { cache: 'no-store' });
+    const bootstrapRes = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', { cache: 'no-store' });
     const bootstrapData: BootstrapData = await bootstrapRes.json();
 
     const currentGw = bootstrapData.events?.find((e) => e.is_current) || bootstrapData.events?.[0];
