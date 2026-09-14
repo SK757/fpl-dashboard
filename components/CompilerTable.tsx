@@ -131,7 +131,7 @@ export default function CompilerTable({ players, teams, positions }: CompilerTab
           </div>
 
           {/* Line 2 on Mobile | Right side on Desktop */}
-          <div className="flex w-full smmd:w-auto items-center gap-2 justify-between smmd:justify-end overflow-x-auto scrollbar-none">
+          <div className="flex w-full smmd:w-auto items-center gap-2 justify-between overflow-x-auto scrollbar-none">
             <button
               onClick={() => setIsCoreViewOnly(!isCoreViewOnly)}
               className="shrink-0 bg-white/60 hover:bg-white/80 font-bold text-sm px-3 py-2 rounded-md outline-none cursor-pointer transition flex items-center gap-2 whitespace-nowrap"

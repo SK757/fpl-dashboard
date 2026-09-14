@@ -10,9 +10,9 @@ async function getSquadData(managerId: string) {
     const bootstrapData: BootstrapData = await bootstrapRes.json();
 
     const currentGw = bootstrapData.events?.find((e) => e.is_current) || bootstrapData.events?.[0];
+    
     const fixturesRes = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${currentGw.id}`);
     const fixturesData = await fixturesRes.json();
-    
     
     const gwId = currentGw?.id;
 
@@ -22,8 +22,8 @@ async function getSquadData(managerId: string) {
 
     if (gwId) {
       const [picksRes, liveRes] = await Promise.all([
-        fetch(`http://localhost:3000/api/fpl/picks/${managerId}/${gwId}`, { cache: 'no-store' }),
-        fetch(`http://localhost:3000/api/fpl/live/${gwId}`, { cache: 'no-store' })
+        fetch(`https://fantasy.premierleague.com/api/entry/${managerId}/event/${gwId}/picks/`, { cache: 'no-store' }),
+        fetch(`https://fantasy.premierleague.com/api/event/${gwId}/live/`, { cache: 'no-store' })
       ]);
 
       if (picksRes.ok) picksData = await picksRes.json();

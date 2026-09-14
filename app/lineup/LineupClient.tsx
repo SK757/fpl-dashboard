@@ -94,8 +94,21 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
   
   // Updated LiveMap to tell TypeScript about the 'explain' breakdown data
   const liveMap = new Map<number, {
-    stats: { total_points: number, minutes:number };
-    explain: { fixture: number; stats: { identifier: string; points: number; value: number }[] }[];
+    stats: { 
+      total_points: number; 
+      minutes:number;
+      expected_goals?: string;
+      expected_assists?: string;
+      expected_goal_involvements?: string;
+    };
+    explain: { 
+      fixture: number; 
+      stats: { 
+        identifier: string;
+        points: number;
+        value: number 
+      }[] 
+    }[];
   }>(
     (liveData?.elements || []).map((e: any) => [e.id, e])
   );
@@ -419,9 +432,9 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
                 <span className="text-[#a7a6a6]">xG</span>
                 <span className="text-[#a7a6a6]">xA</span>
                 <span className="text-[#a7a6a6]">xGI</span>
-                <span>{selectedPlayer.expected_goals || '0.00'}</span>
-                <span>{selectedPlayer.expected_assists || '0.00'}</span>
-                <span>{selectedPlayer.expected_goal_involvements || '0.00'}</span>
+                <span>{selectedLive?.stats?.expected_goals || '0.00'}</span>
+                <span>{selectedLive?.stats?.expected_assists || '0.00'}</span>
+                <span>{selectedLive?.stats?.expected_goal_involvements || '0.00'}</span>
               </div>
               
               {/* Fixtures Block (Last 5 & Next 5) */}
