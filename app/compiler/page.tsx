@@ -4,7 +4,7 @@ import CompilerTable from "@/components/CompilerTable";
 
 async function getCompilerData(): Promise<BootstrapData | null> {
   try {
-    const res = await fetch("http://localhost:3000/api/fpl/bootstrap", {
+    const res = await fetch("https://fantasy.premierleague.com/api/bootstrap-static/", {
       cache: "no-store",
     });
     return await res.json();
@@ -24,7 +24,7 @@ export default async function CompilerPage() {
     <div className="h-dvh overflow-hidden bg-[#00e5ff] text-black py-4 px-2 w-screen max-w-379 min-w-[320px] flex flex-col gap-3">
       {/* Main Content Area */}
       {players.length > 0 ? (
-        <div className="flex-1 min-h-0 flex flex-col gap-2">
+        <div className="flex flex-1 min-h-0">
           <CompilerTable players={players} teams={teams} positions={positions} />
         </div>
       ) : (

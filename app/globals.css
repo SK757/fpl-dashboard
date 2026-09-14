@@ -31,6 +31,7 @@
       opacity: 0.4;
     }
   }
+  --breakpoint-smmd: 41rem;
 }
 
 * {

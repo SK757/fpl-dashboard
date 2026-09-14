@@ -29,7 +29,7 @@ const BASIC_COLUMNS = [
 export default function CompilerTable({ players, teams, positions }: CompilerTableProps) {
   const [search, setSearch] = useState("");
   const [posFilter, setPosFilter] = useState<number | "ALL">("ALL");
-  const [hideTransferred, setHideTransferred] = useState(true);
+  const [hideTransferred, setHideTransferred] = useState(false);
   const [isCoreViewOnly, setIsCoreViewOnly] = useState(true);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: "asc" | "desc" }>({
     key: null,
@@ -65,7 +65,7 @@ export default function CompilerTable({ players, teams, positions }: CompilerTab
     let filtered = players.filter((p) => {
       const matchesSearch = p.web_name.toLowerCase().includes(search.toLowerCase());
       const matchesPos = posFilter === "ALL" || p.element_type === posFilter;
-      const matchesStatus = hideTransferred ? p.status !== "u" : true;
+      const matchesStatus = hideTransferred ? true : p.status !== "u";
       return matchesSearch && matchesPos && matchesStatus;
     });
 
@@ -103,56 +103,65 @@ export default function CompilerTable({ players, teams, positions }: CompilerTab
   );
 
   return (
-    <div>
+    <div className="flex flex-1 gap-2 w-full">
       <div className="flex flex-col flex-1 min-h-0 gap-2 w-full">
-        {/* Top Header with Back Button & Search */}
-        <div className="shrink-0 flex items-center justify-between gap-2">
-          <Link 
-            href="/" 
-            className="bg-white/50 hover:bg-white/80 transition text-black font-extrabold text-xs px-3 py-2 rounded-md"
-          >
-            &larr; Back
-          </Link>
-          <input
+        {/* Top Header */}
+        <div className="shrink-0 flex flex-col smmd:flex-row items-center gap-2 w-full">
+          
+          {/* Line 1 on Mobile | Left side on Desktop */}
+          <div className="flex w-full smmd:w-auto smmd:flex-1 items-center gap-2">
+            <Link 
+              href="/" 
+              className="shrink-0 bg-white/60 hover:bg-white/80 transition text-black font-extrabold text-sm px-3 py-2 rounded-md"
+            >
+              &larr; Back
+            </Link>
+
+            <input
               id="search"
               type="text"
               placeholder="Search player..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 bg-white/60 text-black placeholder-black/50 font-bold px-3 py-2 rounded-md outline-none focus:ring-2 focus:ring-black/20"
+              className="flex-1 min-w-30 bg-white/60 text-black placeholder-black/50 font-bold text-sm px-3 py-2 rounded-md outline-none focus:ring-2 focus:ring-black/20"
               suppressHydrationWarning={true}
               spellCheck={false}
               autoComplete="off"
             />
-        </div>
-        {/* Controls: Advanced Toggle, Position, Transferred */}
-        <div className="shrink-0 flex flex-wrap gap-2 justify-between">
-          <button
-            onClick={() => setIsCoreViewOnly(!isCoreViewOnly)}
-            className="bg-white/60 hover:bg-white/80 font-bold px-4 py-2 rounded-md outline-none cursor-pointer transition flex items-center gap-2"
-          >
-            {isCoreViewOnly ? "Show Advanced" : "Show Basic"}
-          </button>
-          <select
-            id="posFilter"
-            value={posFilter}
-            onChange={(e) => setPosFilter(e.target.value === "ALL" ? "ALL" : Number(e.target.value))}
-            className="bg-white/60 text-center hover:bg-white/80 font-bold px-3 py-2 rounded-md outline-none cursor-pointer focus:ring-2 focus:ring-black/20 appearance-none"
-          >
-            <option value="ALL">All Pos</option>
-            {positions.map((pos) => (
-              <option key={pos.id} value={pos.id}>{pos.singular_name_short}</option>
-            ))}
-          </select>
-          <label className="flex items-center gap-2 bg-white/60 text-black font-bold px-3 py-2 rounded-md cursor-pointer hover:bg-white/80 transition select-none focus-within:ring-2 focus-within:ring-black/20">
-            <input
-              type="checkbox"
-              checked={hideTransferred}
-              onChange={(e) => setHideTransferred(e.target.checked)}
-              className="w-4 h-4 cursor-pointer accent-black"
-            />
-            <span className="text-xs uppercase tracking-tight">Hide Loaned/Left</span>
-          </label>
+          </div>
+
+          {/* Line 2 on Mobile | Right side on Desktop */}
+          <div className="flex w-full smmd:w-auto items-center gap-2 justify-between smmd:justify-end overflow-x-auto scrollbar-none">
+            <button
+              onClick={() => setIsCoreViewOnly(!isCoreViewOnly)}
+              className="shrink-0 bg-white/60 hover:bg-white/80 font-bold text-sm px-3 py-2 rounded-md outline-none cursor-pointer transition flex items-center gap-2 whitespace-nowrap"
+            >
+              {isCoreViewOnly ? "Show Advanced" : "Show Basic"}
+            </button>
+
+            <select
+              id="posFilter"
+              value={posFilter}
+              onChange={(e) => setPosFilter(e.target.value === "ALL" ? "ALL" : Number(e.target.value))}
+              className="shrink-0 bg-white/60 text-center hover:bg-white/80 font-bold text-sm px-3 py-2 rounded-md outline-none cursor-pointer focus:ring-2 focus:ring-black/20 appearance-none whitespace-nowrap"
+            >
+              <option value="ALL">All Positions</option>
+              {positions.map((pos) => (
+                <option key={pos.id} value={pos.id}>{pos.singular_name_short}</option>
+              ))}
+            </select>
+
+            <label className="shrink-0 flex items-center gap-2 bg-white/60 text-black font-bold px-3 py-2 rounded-md cursor-pointer hover:bg-white/80 transition select-none focus-within:ring-2 focus-within:ring-black/20 whitespace-nowrap">
+              <input
+                type="checkbox"
+                checked={hideTransferred}
+                onChange={(e) => setHideTransferred(e.target.checked)}
+                className="w-4 h-4 cursor-pointer accent-black shrink-0"
+              />
+              <span className="text-sm tracking-tight">Hide Unavailable</span>
+            </label>
+          </div>
+          
         </div>
 
         {/* Horizontally Scrollable Table Container */}
