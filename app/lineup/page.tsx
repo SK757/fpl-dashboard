@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { BootstrapData, PicksData } from '../../types/fpl';
-import LineupClient from './LineupClient'; // Import our new UI component
+import LineupClient from './LineupClient';
+
+export const dynamic = 'force-dynamic';
 
 const MY_MANAGER_ID = '3115828';
 
