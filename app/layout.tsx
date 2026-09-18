@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'FPL Lineup',
+    title: 'FPL',
   },
   formatDetection: {
     telephone: false,
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#37003c',
+  themeColor: '#00e5ff',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,

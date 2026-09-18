@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/',
     display: 'standalone',
     background_color: '#00e5ff',
-    theme_color: '#37003c',
+    theme_color: '#00e5ff',
     icons: [
       {
         src: '/icon-192.png',
@@ -23,5 +23,33 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'any',
       },
     ],
+    shortcuts: [
+        {
+            name:"FPL Lineup",
+            url:"/lineup",
+            short_name: 'Lineup',
+            icons: [
+                {
+                  src: '/icon-192.png',
+                  sizes: '192x192',
+                  type: 'image/png',
+                  purpose: 'maskable',
+                }
+            ]
+        },
+        {
+            name:"FPL Compiler",
+            url:"/compiler",
+            short_name: 'Compiler',
+            icons: [
+                {
+                  src: '/icon-192.png',
+                  sizes: '192x192',
+                  type: 'image/png',
+                  purpose: 'maskable',
+                }
+            ]
+        },
+    ]
   };
 }
