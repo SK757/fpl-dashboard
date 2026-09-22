@@ -29,7 +29,7 @@ const BASIC_COLUMNS = [
 export default function CompilerTable({ players, teams, positions }: CompilerTableProps) {
   const [search, setSearch] = useState("");
   const [posFilter, setPosFilter] = useState<number | "ALL">("ALL");
-  const [hideTransferred, setHideTransferred] = useState(false);
+  const [hideTransferred, setHideTransferred] = useState(true);
   const [isCoreViewOnly, setIsCoreViewOnly] = useState(true);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: "asc" | "desc" }>({
     key: null,
@@ -65,7 +65,7 @@ export default function CompilerTable({ players, teams, positions }: CompilerTab
     let filtered = players.filter((p) => {
       const matchesSearch = p.web_name.toLowerCase().includes(search.toLowerCase());
       const matchesPos = posFilter === "ALL" || p.element_type === posFilter;
-      const matchesStatus = hideTransferred ? true : p.status !== "u";
+      const matchesStatus = hideTransferred ? p.status !== "u" : true;
       return matchesSearch && matchesPos && matchesStatus;
     });
 
@@ -143,7 +143,7 @@ export default function CompilerTable({ players, teams, positions }: CompilerTab
               id="posFilter"
               value={posFilter}
               onChange={(e) => setPosFilter(e.target.value === "ALL" ? "ALL" : Number(e.target.value))}
-              className="shrink-0 bg-white/60 text-center hover:bg-white/80 font-bold text-sm px-3 py-2 rounded-md outline-none cursor-pointer focus:ring-2 focus:ring-black/20 appearance-none whitespace-nowrap"
+              className="shrink-0 bg-white/60 text-center hover:bg-white/80 font-bold text-sm px-3 py-2 rounded-md outline-none cursor-pointer appearance-none whitespace-nowrap"
             >
               <option value="ALL">All Positions</option>
               {positions.map((pos) => (
@@ -151,7 +151,7 @@ export default function CompilerTable({ players, teams, positions }: CompilerTab
               ))}
             </select>
 
-            <label className="shrink-0 flex items-center gap-2 bg-white/60 text-black font-bold px-3 py-2 rounded-md cursor-pointer hover:bg-white/80 transition select-none focus-within:ring-2 focus-within:ring-black/20 whitespace-nowrap">
+            <label className="shrink-0 flex items-center gap-2 bg-white/60 text-black font-bold px-3 py-2 rounded-md cursor-pointer hover:bg-white/80 transition select-none whitespace-nowrap">
               <input
                 type="checkbox"
                 checked={hideTransferred}
