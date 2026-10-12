@@ -42,10 +42,15 @@ export default function manifest(): MetadataRoute.Manifest {
         short_name: 'Lineup',
         icons: [
           {
-            src: '/icon-192-transparent.png',
+            src: '/icon-shortcut-96.png',
+            sizes: '96x96',
+            type: 'image/png',
+          },
+          {
+            src: '/icon-shortcut-192.png',
             sizes: '192x192',
             type: 'image/png',
-          }
+          },
         ]
       },
       {
@@ -54,10 +59,15 @@ export default function manifest(): MetadataRoute.Manifest {
         short_name: 'Compiler',
         icons: [
           {
-            src: '/icon-192-transparent.png',
+            src: '/icon-shortcut-96.png',
+            sizes: '96x96',
+            type: 'image/png',
+          },
+          {
+            src: '/icon-shortcut-192.png',
             sizes: '192x192',
             type: 'image/png',
-          }
+          },
         ]
       },
     ]
