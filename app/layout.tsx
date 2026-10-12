@@ -19,7 +19,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false, // Prevents accidental zooming on mobile pitch interactions
+  userScalable: false,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
