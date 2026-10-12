@@ -82,7 +82,7 @@ export default function LeagueTabs({ leaguesData }: { leaguesData: LeagueStandin
       <div className="bg-white/50 rounded-[3px] flex flex-col min-h-0">
         
         {/* Toggle Buttons */}
-        <div className="shrink-0 flex gap-1 py-1 justify-center mx-2">
+        <div className="shrink-0 flex gap-1 my-1.75 justify-center mx-2">
           {rightLeagues.map((l) => (
             <button
               key={l.league.id}
@@ -95,7 +95,7 @@ export default function LeagueTabs({ leaguesData }: { leaguesData: LeagueStandin
             >
               {/* Shortens names so buttons fit side-by-side nicely */}
               {l.league.name === 'Ex-Taskers Fantasy League' 
-                ? 'Ex-Taskers' 
+                ? 'OG\'s' 
                 : l.league.name === 'Just for Fun' 
                   ? 'Taskers' 
                   : 'Money'}
