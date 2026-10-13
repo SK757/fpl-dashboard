@@ -168,10 +168,10 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
                                         : item.value > 1;
 
                                       return (
-                                        <div key={idx} className="leading-4.75">
+                                        <div key={idx} className="leading-4.75 m-0.5">
                                           {name}
                                           {showValue && (
-                                            <strong className="text-[#37003c] ml-[6.6px] text-[16px]">
+                                            <strong className="text-black ml-[6.6px] text-[16px] bg-white/60 px-1 rounded-[3px]">
                                               {item.value}
                                             </strong>
                                           )}
@@ -191,9 +191,9 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
                                         : item.value > 1;
 
                                       return (
-                                        <div key={idx} className="leading-4.75">
+                                        <div key={idx} className="leading-4.75 m-0.5">
                                           {showValue && (
-                                            <strong className="text-[#37003c] mr-[6.6px] text-[16px]">
+                                            <strong className="text-black mr-[6.6px] text-[16px] bg-white/60 px-1 rounded-[3px]">
                                               {item.value}
                                             </strong>
                                           )}
