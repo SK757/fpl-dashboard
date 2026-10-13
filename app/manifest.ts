@@ -7,6 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Track live FPL stats and squad lineups',
     start_url: '/',
     display: 'standalone',
+    orientation: 'portrait',
     background_color: '#00e5ff',
     theme_color: '#00e5ff',
     icons: [
