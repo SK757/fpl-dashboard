@@ -34,8 +34,10 @@
   --breakpoint-smmd: 41rem;
 }
 
-* {
-    transition: background 200ms,transform 200ms,border-color 200ms
+@layer base {
+  * {
+    transition: background 200ms, transform 200ms, border-color 200ms;
+  }
 }
 
 body {

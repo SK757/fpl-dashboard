@@ -159,22 +159,22 @@ export default async function Home() {
           Compiler
         </Link>
         <Link 
-          href="/lineup" 
-          className="bg-white/60 hover:bg-white text-black font-bold text-center py-3 rounded-md"
-        >
-          Lineup
-        </Link>
-        <Link 
           href="/history" 
           className="bg-white/60 hover:bg-white text-black font-bold text-center py-3 rounded-md"
         >
           History
         </Link>
         <Link 
-          href="/strength" 
+          href="/fixtures" 
           className="bg-white/60 hover:bg-white text-black font-bold text-center py-3 rounded-md"
         >
-          Strength
+          Fixtures
+        </Link>
+        <Link 
+          href="/standings" 
+          className="bg-white/60 hover:bg-white text-black font-bold text-center py-3 rounded-md"
+        >
+          Standings
         </Link>
       </div>
 
