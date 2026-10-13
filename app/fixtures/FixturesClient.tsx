@@ -155,9 +155,9 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
                                 </div>
 
                                 {/* Two-Column Player Event Row with Vertical Divider */}
-                                <div className="grid gap-8.75 grid-cols-2 grid-rows-[auto] w-full m-[5px_0_20px]">
+                                <div className="divide-x divide-black grid grid-cols-2 grid-rows-[auto] w-full m-[5px_0_20px]">
                                   {/* Home Team Stats (Right-aligned text) */}
-                                  <div className="text-right text-[15px] font-light">
+                                  <div className="text-right text-[15px] font-light pr-4.25">
                                     {homeStats.map((item, idx) => {
                                       const p = playerMap.get(item.element);
                                       const name = p ? p.web_name : `Player ${item.element}`;
@@ -181,7 +181,7 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
                                   </div>
 
                                   {/* Away Team Stats (Left-aligned text) */}
-                                  <div className="text-left text-[15px] font-light">
+                                  <div className="text-left text-[15px] font-light pl-4.25">
                                     {awayStats.map((item, idx) => {
                                       const p = playerMap.get(item.element);
                                       const name = p ? p.web_name : `Player ${item.element}`;
