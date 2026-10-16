@@ -71,7 +71,7 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
         <div className="flex items-center justify-between py-1.5">
           <Link
             href="/"
-            className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded transition"
+            className="text-xs bg-white/60 hover:bg-whote text-black px-3 py-1 rounded-[3px] transition"
           >
             &larr; Home
           </Link>
