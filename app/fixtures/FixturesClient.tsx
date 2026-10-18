@@ -117,7 +117,7 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
                       className="w-full p-3.75 flex items-center justify-between cursor-pointer transition"
                     >
                       {hasStarted && !hasFinished ? (
-                        <span className="left-1 p-[0_3px] bg-white/60 rounded-sm text-[13px] text-[#37003c] font-normal absolute">Live</span>
+                        <span className="left-1 p-[2px_3px] bg-white rounded-sm text-[13px] text-[#37003c] font-normal absolute">Live</span>
                       ) : (
                         <span className="text-[16px] text-[#37003c] font-normal"></span>
                       )}
@@ -135,7 +135,7 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
                       <span className="text-[15px] flex-1 text-left pl-3 truncate">{awayTeam}</span>
 
                       {hasStarted && !hasFinished ? (
-                        <span className="right-1 text-[13px] text-[#37003c] font-normal absolute">{fixture.minutes}'</span>
+                        <span className="right-1 p-[2px_3px] bg-white rounded-sm text-[13px] text-[#37003c] font-normal absolute">{fixture.minutes}'</span>
                       ) : (
                         <span className="text-[16px] text-[#37003c] font-normal"></span>
                       )}
