@@ -62,7 +62,8 @@ export default async function Home() {
   const topPlayerName = topPlayerObj ? topPlayerObj.web_name : '-';
 
   const deadlineDate = nextGw
-    ? new Date(nextGw.deadline_time).toLocaleDateString('en-GB', {
+    ? new Date(nextGw.deadline_time).toLocaleString('en-GB', {
+        timeZone: 'Europe/London',
         weekday: 'short',
         day: 'numeric',
         month: 'short',

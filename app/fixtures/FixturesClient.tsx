@@ -43,7 +43,7 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
     (bootstrapData.elements || []).map((p: any) => [p.id, p])
   );
 
-  // Group fixtures by formatted date (e.g., "Saturday 18 October 2026")[cite: 4]
+  // Group fixtures by formatted date (e.g., "Sat 18 Oct")
   const groupedFixtures: Record<string, any[]> = {};
 
   (fixturesData || []).forEach((fixture: any) => {
@@ -96,9 +96,11 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
                 const awayTeam = teamMap.get(fixture.team_a) || 'Away Team';
                 const isExpanded = expandedFixtureId === fixture.id;
 
-                const hasStarted = fixture.started || fixture.team_h_score !== null;
+                const hasStarted = fixture.started && fixture.team_h_score !== null;
+                const hasFinished = fixture.finished_provisional;
                 const kickoffDate = new Date(fixture.kickoff_time);
                 const timeString = kickoffDate.toLocaleTimeString([], {
+                  timeZone: 'Europe/London',
                   hour: '2-digit',
                   minute: '2-digit',
                 });
@@ -106,7 +108,7 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
                 return (
                   <div
                     key={fixture.id}
-                    className="overflow-hidden transition border-b border-[#636363] last:border-0 leading-none"
+                    className="overflow-hidden transition border-b border-[#636363] last:border-0 leading-none relative"
                   >
                     {/* Clickable Fixture Header */}
                     <button
@@ -114,18 +116,29 @@ export default function FixturesClient({ bootstrapData, fixturesData, currentGw 
                       onClick={() => toggleFixture(fixture.id)}
                       className="w-full p-3.75 flex items-center justify-between cursor-pointer transition"
                     >
+                      {hasStarted && !hasFinished ? (
+                        <span className="left-3.5 p-[0_.15rem] bg-white/60 rounded-sm text-[16px] text-[#37003c] font-normal absolute">Live</span>
+                      ) : (
+                        <span className="text-[16px] text-[#37003c] font-normal"></span>
+                      )}
                       <span className="text-[15px] flex-1 text-right pr-3 truncate">{homeTeam}</span>
 
                       {/* Center Score / Time */}
-                      <div className="min-w-18 px-2.5 text-center font-bold text-[22.5px] text-[#37003c]">
+                      <div className="min-w-18 px-2.5 text-center font-bold text-[23px] text-[#37003c] flex items-center justify-center">
                         {hasStarted ? (
                           `${fixture.team_h_score} - ${fixture.team_a_score}`
                         ) : (
-                          <span className="text-xs text-gray-300 font-normal">{timeString}</span>
+                          <span className="text-[16px] text-[#37003c] font-normal">{timeString}</span>
                         )}
                       </div>
 
                       <span className="text-[15px] flex-1 text-left pl-3 truncate">{awayTeam}</span>
+
+                      {hasStarted && !hasFinished ? (
+                        <span className="right-3.5 p-[0_.15rem] bg-white/60 rounded-sm text-[16px] text-[#37003c] font-normal absolute">{fixture.minutes}'</span>
+                      ) : (
+                        <span className="text-[16px] text-[#37003c] font-normal"></span>
+                      )}
                     </button>
 
                     {/* Dropdown Stats Section */}

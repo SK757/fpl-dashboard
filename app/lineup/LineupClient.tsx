@@ -313,7 +313,7 @@ export default function LineupClient({ bootstrapData, picksData, liveData, curre
                   const timeString = matchDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                   const dateString = matchDate.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
 
-                  const hasStarted = match && (match.started || match.team_h_score !== null);
+                  const hasStarted = match && (match.started && match.team_h_score !== null);
                   const scoreDisplay = hasStarted ? (
                     `${match.team_h_score} - ${match.team_a_score}`
                   ) : (
